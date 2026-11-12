@@ -3,7 +3,7 @@ from datetime import date
 from io import StringIO
 import os
 import pandas as pd
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from .models import estimate_lambdas, predict
@@ -27,8 +27,13 @@ def health():
     return {"status": "ok", "version": app.version, "matches_loaded": len(DATA)}
 
 @app.post("/api/data/csv")
-async def upload_csv(file: UploadFile = File(...)):
+async def upload_csv(file: UploadFile = File(...), x_admin_token: str | None = Header(default=None)):
     global DATA
+    admin_token = os.getenv("FMIS_ADMIN_TOKEN")
+    if not admin_token:
+        raise HTTPException(503, "CSV upload is disabled until FMIS_ADMIN_TOKEN is configured")
+    if x_admin_token != admin_token:
+        raise HTTPException(403, "Invalid admin token")
     if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(400, "Upload a .csv file")
     raw = await file.read()

@@ -1,22 +1,25 @@
-name: Build APK
-on: [push]
+name: Build APK (Android project pending)
+
+# This repository currently contains the Python API and static web dashboard,
+# but no Android Gradle project or Gradle wrapper. Keep this workflow manual
+# until the native Android project is added; otherwise every push fails before
+# Gradle can start.
+on:
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-      - name: Build APK
+      - name: Check Android project
         run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Football-Analytics-Lab-APK
-          path: app/build/outputs/apk/debug/*.apk
+          if [ -f gradlew ]; then
+            echo "Found root Gradle wrapper."
+          elif [ -f android/gradlew ]; then
+            echo "Found Android Gradle wrapper."
+          else
+            echo "Android APK build is not ready: this repository has no gradlew or android/gradlew yet."
+            echo "Add the Android Gradle project and wrapper before enabling the APK build."
+            exit 1
+          fi

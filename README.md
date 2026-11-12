@@ -29,6 +29,7 @@ pytest -q
 ```
 
 ## Deploy
+- Before exposing the service publicly, set a strong random `FMIS_ADMIN_TOKEN` in the hosting provider environment. Public analysis endpoints remain readable; CSV replacement requires this token. The upload token is not a user account/login.
 - Backend: deploy this repository to Render using `render.yaml`. Free-tier availability and sleep/cold-start behavior depend on the provider's current plan.
 - Dashboard: GitHub Actions publishes `frontend/` to GitHub Pages. Enable Pages with **GitHub Actions** as the build source in repository settings.
 - Set `FMIS_API_BASE` in `frontend/config.js` to the deployed backend URL (no trailing slash), then commit the change.

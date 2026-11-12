@@ -47,7 +47,9 @@ async def upload_csv(file: UploadFile = File(...)):
         for col in ("home_xg", "away_xg"):
             if col in df:
                 df[col] = pd.to_numeric(df[col], errors="coerce")
-        df = df.dropna(subset=["home_team", "away_team"])
+        df = df.dropna(subset=["date", "home_team", "away_team", "home_goals", "away_goals"])
+        # Convert NaN to real None so missing optional xG never contaminates model arithmetic.
+        df = df.astype(object).where(pd.notna(df), None)
         DATA = df.to_dict(orient="records")
         return {"loaded": len(DATA), "columns": list(df.columns), "status": "validated"}
     except Exception as exc:
